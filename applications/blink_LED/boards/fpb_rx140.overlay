@@ -1,0 +1,51 @@
+/*
+ * Copyright (c) 2025 Renesas Electronics Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/*
+ * FPB-RX140 board overlay for blink_LED application.
+ *
+ * User-controllable GPIO peripherals on FPB-RX140:
+ *   LED1 (green) : P20  - ioport2, pin 0, active-low
+ *   LED2 (green) : P32  - ioport3, pin 2, active-low
+ *   SW1 (user)   : P30  - ioport3, pin 0, active-low, pull-up
+ *
+ * Note: The Power LED (LED3) and Debug LED (LED4) visible on the board are
+ * connected to the power rail and E2OB debugger circuit respectively, and
+ * are not controllable via GPIO.
+ * The Reset switch (SW2/RESET) is connected to the MCU RESET pin, not GPIO.
+ */
+
+/ {
+	leds {
+		compatible = "gpio-leds";
+
+		led1: led1 {
+			gpios = <&ioport2 0 GPIO_ACTIVE_LOW>;
+			label = "LED1";
+		};
+
+		led2: led2 {
+			gpios = <&ioport3 2 GPIO_ACTIVE_LOW>;
+			label = "LED2";
+		};
+	};
+
+	buttons {
+		compatible = "gpio-keys";
+
+		sw1: button {
+			label = "SW1";
+			gpios = <&ioport3 0 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			zephyr,code = <INPUT_KEY_0>;
+		};
+	};
+
+	aliases {
+		led0 = &led1;
+		led1 = &led2;
+		sw0 = &sw1;
+	};
+};
