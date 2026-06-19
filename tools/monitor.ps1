@@ -18,8 +18,8 @@ function Find-CdcComPort {
          Sort-Object FriendlyName
 
   # Priority 1: Known USB-UART bridge VIDs and name patterns (CH340/CP210/FTDI/PL23xx/etc.)
-  $bridgeVidPattern  = 'VID_1A86|VID_10C4|VID_0403|VID_067B|VID_04D8|VID_16C0'
-  $bridgeNamePattern = 'CH340|CH341|CP210|FTDI|USB-?SERIAL|PL2303|MCP2200|Arduino|Prolific'
+  $bridgeVidPattern  = 'VID_1A86|VID_10C4|VID_0403|VID_067B|VID_04D8|VID_16C0|VID_045B|VID_1366'
+  $bridgeNamePattern = 'CH340|CH341|CP210|FTDI|USB-?SERIAL|PL2303|MCP2200|Arduino|Prolific|Renesas|SEGGER|J-?Link'
   foreach ($p in $pnp) {
     if ($p.InstanceId -match $bridgeVidPattern -or $p.FriendlyName -match $bridgeNamePattern) {
       $com = Extract-ComPort $p.FriendlyName

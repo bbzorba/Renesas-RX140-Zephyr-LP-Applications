@@ -5,17 +5,15 @@
  */
 
 /*
- * FPB-RX140 board overlay for blink_LED application.
+ * FPB-RX140 board overlay for multithreaded_buttons_LEDs application.
  *
  * User-controllable GPIO peripherals on FPB-RX140:
  *   LED1 (green) : P20  - ioport2, pin 0, active-low
  *   LED2 (green) : P32  - ioport3, pin 2, active-low
- *   SW1 (user)   : P30  - ioport3, pin 0, active-low, pull-up
+ *   SW1 (user)   : P30  - ioport3, pin 0, active-low, pull-up  → IRQ0
  *
- * Note: The Power LED (LED3) and Debug LED (LED4) visible on the board are
- * connected to the power rail and E2OB debugger circuit respectively, and
- * are not controllable via GPIO.
- * The Reset switch (SW2/RESET) is connected to the MCU RESET pin, not GPIO.
+ * MTU1 is disabled here because the board DTS assigns P20 (LED1) to MTIOC1A
+ * (PWM). Leaving it enabled causes MTU1 to reconfigure P20 away from GPIO.
  */
 
 / {
@@ -53,6 +51,10 @@
 		led1 = &led1;
 		led2 = &led2;
 		sw1 = &sw1;
-		sw2 = &sw2;
 	};
+};
+
+/* Disable MTU1 so its pinctrl does not reconfigure P20 (LED1) away from GPIO. */
+&mtu1 {
+	status = "disabled";
 };

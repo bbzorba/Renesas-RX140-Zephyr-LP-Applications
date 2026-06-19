@@ -11,11 +11,13 @@
 # ============================================================
 
 # --- Select application to build (uncomment one) ---
-COMPILE_DIR ?= applications/blink_LED
-#COMPILE_DIR ?= applications/threaded_blink_LEDs
+#COMPILE_DIR ?= applications/blink_LED
+COMPILE_DIR ?= applications/multithreaded_buttons_LEDs
 
 BOARD     ?= fpb_rx140
-BUILD_DIR ?= $(COMPILE_DIR)/build
+# Build at workspace root to avoid Windows MAX_PATH issues with deep app paths
+BUILD_DIR ?= build/$(notdir $(COMPILE_DIR))
+FLASH_RUNNER ?= auto
 BAUD      ?= 115200
 PORT      ?=
 ZEPHYR_REQS := external/zephyr/scripts/requirements.txt
@@ -35,15 +37,20 @@ DEPS_MARKER := .venv/.deps-ready
 # Use a west launcher with git revision compatibility fallbacks
 WEST := $(PYTHON_CMD) tools/west_compat.py
 
+# Add venv Scripts to PATH so CMake can find ninja.exe (installed via pip)
+ifeq ($(OS),Windows_NT)
+    export PATH := $(CURDIR)/.venv/Scripts:$(PATH)
+endif
+
 # ============================================================
 .DEFAULT_GOAL := build
 .PHONY: help setup build flash clean build-flash update debug monitor flashmonitor-auto _gen-debug-context
 
 help:
-	@echo Usage: make [setup, build, flash, clean, build-flash, update, debug, monitor, flashmonitor-auto] [COMPILE_DIR=...] [BOARD=...]
+	@echo Usage: make [setup, build, flash, clean, build-flash, update, debug, monitor, flashmonitor-auto] [COMPILE_DIR=...] [BOARD=...] [FLASH_RUNNER=...]
 	@echo   setup       - Create virtual environment and install dependencies
 	@echo   build       - Build the selected application
-	@echo   flash       - Flash to ESP32C6 DevKitC board
+	@echo   flash       - Flash using west runner (default: auto -> jlink if probe exists, else rfp)
 	@echo   clean       - Remove build directory
 	@echo   build-flash - Build then flash
 	@echo   update      - Update Zephyr and dependencies
@@ -53,6 +60,7 @@ help:
 
 	@echo COMPILE_DIR=$(COMPILE_DIR)
 	@echo BOARD=$(BOARD)
+	@echo FLASH_RUNNER=$(FLASH_RUNNER)
 
 # Bootstrap: create venv, install west, init workspace, fetch zephyr, install deps
 $(VENV_MARKER):
@@ -75,7 +83,11 @@ build: $(DEPS_MARKER)
 	$(WEST) build -b $(BOARD) $(COMPILE_DIR) -d $(BUILD_DIR) --pristine=auto -- -DBOARD_ROOT=$(CURDIR)
 
 flash:
-	$(WEST) flash -d $(BUILD_DIR)
+ifeq ($(OS),Windows_NT)
+	powershell -NoProfile -ExecutionPolicy Bypass -Command '$$runner = "$(FLASH_RUNNER)"; if ($$runner -eq "auto") { $$segger = Get-PnpDevice -PresentOnly -ErrorAction SilentlyContinue | Where-Object { $$_.InstanceId -match "VID_1366" -and $$_.Status -eq "OK" } | Select-Object -First 1; if ($$segger) { $$runner = "jlink" } else { $$runner = "rfp" } }; Write-Host ("Using flash runner: " + $$runner); & "$(PYTHON_CMD)" tools/west_compat.py flash -d "$(BUILD_DIR)" --runner $$runner'
+else
+	$(WEST) flash -d $(BUILD_DIR) --runner $(if $(filter auto,$(FLASH_RUNNER)),jlink,$(FLASH_RUNNER))
+endif
 
 clean:
 ifeq ($(OS),Windows_NT)

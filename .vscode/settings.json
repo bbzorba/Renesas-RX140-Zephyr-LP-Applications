@@ -5,13 +5,13 @@
     "peripheral-viewer.svdAddrGapThreshold": -1,
 
     // ─── Zephyr debug context (auto-generated — do not edit manually) ─────
-    "zephyr.compileDir": "applications/blink_LED",
+    "zephyr.compileDir": "applications/multithreaded_buttons_LEDs",
     "zephyr.board": "fpb_rx140",
     "zephyr.openocdBoardPath": "(openocd.cfg not found for fpb_rx140)",
     "zephyr.sdkVersion": "zephyr-sdk-1.0.1",
     "zephyr.gdbArch": "arm-zephyr-eabi",
     "zephyr.svdFile": "",
     "cortex-debug.openocdPath": "C:/Users/bzorba.B1-ES/.espressif/tools/openocd-esp32/v0.12.0-esp32-20250422/openocd-esp32/bin/openocd.exe",
-    "C_Cpp.default.compileCommands": "${workspaceFolder}/applications/blink_LED/build/compile_commands.json",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/multithreaded_buttons_LEDs/compile_commands.json",
     // ─────────────────────────────────────────────────────────────────────────
 }
